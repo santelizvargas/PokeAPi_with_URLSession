@@ -7,21 +7,23 @@
 
 import UIKit
 
-class PokemonCellTableViewCell: UITableViewCell {
+final class PokemonCellTableViewCell: UITableViewCell {
 
-    @IBOutlet weak var imagePokemon: UIImageView!
-    @IBOutlet weak var namePokemon: UILabel!
-    @IBOutlet weak var idPokemon: UILabel!
+    // MARK: - IBOutlets
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
+    @IBOutlet private var imagePokemon: UIImageView!
+    @IBOutlet private var namePokemon: UILabel!
+    @IBOutlet private var idPokemon: UILabel!
+    
+    // MARK: - Funcitons
+    
+    func configure(name: String, id: Int) {
+        namePokemon.text = name.capitalized
+        idPokemon.text = "\(id)"
     }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
+    
+    func setupImage(_ image: UIImage?) {
+        imagePokemon.image = image
     }
     
 }

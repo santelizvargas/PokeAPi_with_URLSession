@@ -86,6 +86,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		331524C12AEA3A00000B971D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		4529619628B9154D00A26DBD = {
 			isa = PBXGroup;
 			children = (
@@ -109,6 +116,7 @@
 		452961A128B9154D00A26DBD /* PokeApiUikit */ = {
 			isa = PBXGroup;
 			children = (
+				331524C12AEA3A00000B971D /* Views */,
 				452961A228B9154D00A26DBD /* AppDelegate.swift */,
 				452961A428B9154D00A26DBD /* SceneDelegate.swift */,
 				452961A628B9154D00A26DBD /* PokemonViewController.swift */,

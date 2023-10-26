@@ -7,53 +7,67 @@
 
 import UIKit
 
-class PokemonViewController: UIViewController {
+final class PokemonViewController: UIViewController {
 
-    @IBOutlet weak var searchBarPokemon: UISearchBar!
-    @IBOutlet weak var tablePokemon: UITableView!
+    @IBOutlet private var searchBarPokemon: UISearchBar!
+    @IBOutlet private var tablePokemon: UITableView!
     
-    var pokemonManager = PokemonManager()
-    var pokemons: [Pokemon] = []
-    var selectedPokemon: Pokemon?
-    var filteredPokemon: [Pokemon] = []
+    private var pokemonManager = PokemonManager()
+    private var pokemons: [Pokemon] = []
+    private var selectedPokemon: Pokemon?
+    private var filteredPokemon: [Pokemon] = []
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        tablePokemon.register(UINib(nibName: "PokemonCellTableViewCell", bundle: nil), forCellReuseIdentifier: "cell")
-        
-        pokemonManager.delegate = self
-        searchBarPokemon.delegate = self
+        setupView()
+    }
+    
+    private func setupTableView() {
         tablePokemon.delegate = self
         tablePokemon.dataSource = self
         
+        tablePokemon.register(UINib(nibName: "PokemonCellTableViewCell", bundle: nil), 
+                              forCellReuseIdentifier: "cell")
+    }
+    
+    private func setupView() {
+        searchBarPokemon.delegate = self
+        pokemonManager.delegate = self
+        setupTableView()
         pokemonManager.showPokemon()
-        
     }
 
 
 }
+
+// MARK: - UISearchBar Delegate
+
 extension PokemonViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         filteredPokemon = []
         
-        if searchText == "" {
+        if searchText.isEmpty {
             filteredPokemon = pokemons
         } else {
-            for poke in pokemons {
-                           if poke.name.lowercased().contains(searchText.lowercased()) {
-                               filteredPokemon.append(poke)
-                           }
-                       }
+            pokemons.forEach { poke in
+                if poke.name.lowercased().contains(searchText.lowercased()) {
+                    filteredPokemon.append(poke)
+                }
+            }
         }
+        
         self.tablePokemon.reloadData()
     }
 }
 
+// MARK: - Pokemon Manager Delegate
+
 extension PokemonViewController: pokemonManagerDelegate {
+    
     func showPokemonData(myList: [Pokemon]) {
         pokemons = myList
+        
         DispatchQueue.main.async {
             self.filteredPokemon = myList
             self.tablePokemon.reloadData()
@@ -61,24 +75,31 @@ extension PokemonViewController: pokemonManagerDelegate {
     }
 }
 
+// MARK: - UITableViewDelegate and UITableViewDataSource
+
 extension PokemonViewController: UITableViewDelegate, UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredPokemon.count
+        filteredPokemon.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tablePokemon.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! PokemonCellTableViewCell
-
-        cell.namePokemon.text = filteredPokemon[indexPath.row].name.capitalized
-        cell.idPokemon.text = "\(filteredPokemon[indexPath.row].id)"
+        guard let cell = tablePokemon.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as? PokemonCellTableViewCell
+        else { return UITableViewCell() }
         
-        if let urlString = filteredPokemon[indexPath.row].imageUrl as? String{
+        let pokemon = filteredPokemon[indexPath.row]
+        cell.configure(name: pokemon.name, id: pokemon.id)
+        
+        if let urlString = filteredPokemon[indexPath.row].imageUrl {
               if let imageURL = URL(string: urlString) {
+                  
                 DispatchQueue.global().async {
+                    
                   guard let dataImage = try? Data(contentsOf: imageURL) else { return }
                   let image = UIImage(data: dataImage)
+                    
                   DispatchQueue.main.async {
-                    cell.imagePokemon.image = image
+                      cell.setupImage(image)
                   }
                 }
               }
@@ -89,16 +110,14 @@ extension PokemonViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedPokemon = filteredPokemon[indexPath.row]
-        
         performSegue(withIdentifier: "showDetailsPokemon", sender: self)
-        
-//        Deselect
         tablePokemon.deselectRow(at: indexPath, animated: true)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetailsPokemon" {
-            let showPokemonTrue = segue.destination as! PokemonDetailsViewController
+            guard let showPokemonTrue = segue.destination as? PokemonDetailsViewController
+            else { return }
             showPokemonTrue.showPokemon = selectedPokemon
         }
     }
